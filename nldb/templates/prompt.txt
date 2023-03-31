@@ -1,0 +1,45 @@
+# Edit this file. You can leave comments like this one.
+I have a SQLite database with one table:
+
+# Run .schema from your sqlite3 prompt to output the schema
+CREATE TABLE [activities] (
+   [customer_id] TEXT,
+   [stream_start_date] TEXT,
+   [stream_checkout_date] TEXT,
+   [country] TEXT,
+   [product] TEXT,
+   [source_name] TEXT,
+   [cancel_email_sent_date] TEXT,
+   [expiry_date] TEXT,
+   [last_activity_date] TEXT,
+   [last_ticket_bought_date] TEXT,
+   [last_gift_date] TEXT
+);
+
+# Describe the table
+It represents the activity of a customer in a streaming service. The columns are:
+
+# Describe each column using terms that are likely to be used in questions
+customer_id: the id of the customer
+stream_start_date: the date when the customer started streaming
+stream_checkout_date: the date when the customer signed up for the streaming service
+country: the country of the customer
+product: the product the customer is subscribed to
+source_name: the source of the customer (e.g. 'Telegraph Stream launch offer')
+cancel_email_sent_date: the date when the customer sent an email to cancel their subscription
+expiry_date: the date when the customer's subscription expires
+last_activity_date: the date of the customer's last activity
+last_ticket_bought_date: the date when the customer last bought a ticket
+last_gift_date: the date when the customer last gifted a ticket
+
+# Provide a sample of the data.
+The rows look like this:
+
+5550115|2022-10-04|2022-10-04|United Kingdom|Stream - Monthly|Telegraph Stream launch offer|2023-01-06|2023-01-18|2023-01-17|2022-11-16|2022-04-10
+5552423|2022-10-04|2022-10-04|United Kingdom|Stream (Friends) - Monthly|Members & Patrons - MONTHLY|2022-12-29|2023-01-18|2023-03-16|2023-03-14|2023-03-14
+5559898|2022-10-04|2022-10-04|United Kingdom|Stream (Friends) - Monthly|Members & Patrons - MONTHLY|2023-01-02|2023-01-18|2023-03-22|2023-03-20|2023-03-20
+
+# Don't change the following lines
+Write a SQL query which answers this question: %s
+
+Don't explain it, just return the SQL query.

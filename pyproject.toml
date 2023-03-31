@@ -9,6 +9,16 @@ readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: MIT License"]
 dynamic = ["version", "description"]
+dependencies = [
+    "openai",
+    "fastapi",
+    "uvicorn[standard]",
+    "tabulate",
+    "typer"
+]
 
 [project.urls]
 Home = "https://github.com/tomdyson/nldb"
+
+[project.scripts]
+nldb = "nldb.cli:cli_wrapper"
