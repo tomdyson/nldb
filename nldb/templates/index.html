@@ -1,28 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <title>NLDB</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8" />
     <link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.4/axios.min.js"></script>
     <style>
         th {
             text-align: left;
-            background-color: aquamarine;
-            padding: 5px;
+            font-weight: 600;
         }
-
         table {
-            border-spacing: 0 0.3em;
+            border-spacing: 0 0.1em;
         }
-
         td {
-            padding-top: 4px;
+            padding-top: 0px;
         }
-
         .light-green {
             color: aquamarine;
         }
@@ -37,13 +31,24 @@
                 <label for="question" class="f4 db mb3">Your question:</label>
                 <input id="question" class="input-reset f4 ba b--black-20 pa2 mb1 db w-100 br2" type="text"
                     v-model.lazy="question">
-                <!-- <textarea id="question" name="question"
-                    class="db border-box hover-black w-100 f4 ba b--black-20 pa2 br2 mb2"
-                    v-model.lazy="question"></textarea> -->
                 <input id="submit" class="dim mt3 pointer ph3 pv2 input-reset ba b--black br2 bg-transparent f4 mb3"
                     type="submit" :value="button_text">
-                <span class="mt1 code f5" v-html="answer"></span>
-
+                <div class="mt0 f4" v-html="answer"></div>
+                <div class="mt3 mb2" v-if="answer.length">
+                    <a class="light-green dim" href="#" @click="toggleText()">show workings</a>
+                </div>
+                <div id="context" v-if="sql.length" v-show="display"
+                    class="mv3 f5 bg-light-pink pt2 ph2 pb1 br2 lh-copy">
+                    <span class="near-white">Query:</span>
+                    <div v-html="sql" class="mv2"></div>
+                    <span class="near-white">Results:</span>
+                    <div v-html="results" class="mv2"></div>
+                    <span class="near-white mt2">Cost:</span> ${{ cost }} ({{ tokens }} tokens)<br />
+                    <span class="near-white mt2">Timing:</span>
+                    building query: {{ parseFloat(duration[0].toFixed(3)) }},
+                    running query: {{ parseFloat(duration[1].toFixed(3)) }},
+                    explaining results: {{ parseFloat(duration[2].toFixed(3)) }}
+                </div>
             </div>
         </form>
     </div>
@@ -54,6 +59,7 @@
             data: {
                 question: '',
                 answer: '',
+                results: '',
                 tokens: 0,
                 cost: 0,
                 duration: [],
@@ -64,28 +70,31 @@
             methods: {
                 formSubmit(e) {
                     e.preventDefault();
-                    app.button_text = "Hold tight...";
+                    app.button_text = "Working it out...";
+                    app.answer = "";
+                    app.sql = "";
                     api_url = "/api/ask?q=" + app.question;
-                    axios.get(api_url)
-                        .then(function (response) {
-                            app.answer = response.data['response']['answer'];
-                            app.tokens = response.data['response']['tokens'];
-                            app.sql = response.data['response']['sql'];
-                            app.cost = response.data['response']['cost'];
-                            app.duration = response.data['response']['duration'];
+                    fetch(api_url)
+                        .then(async function (response) {
+                            let json = await response.json();
+                            let resp = json['response'];
+                            app.answer = resp['answer'];
+                            app.results = resp['results'];
+                            app.tokens = resp['tokens'];
+                            app.sql = resp['sql'];
+                            app.cost = parseFloat(resp['cost'].toFixed(4))
+                            app.duration = resp['duration'];
                             app.button_text = "Tell me";
-                            console.log('Tokens: ', app.tokens);
-                            console.log('Cost: $', app.cost);
-                            console.log('SQL: ', app.sql);
-                            console.log('Duration: ', app.duration);
                         })
                         .catch(function (error) {
                             console.log(error);
                         });
                 },
+                toggleText() {
+                    this.display = !this.display;
+                }
             }
         })
     </script>
 </body>
-
 </html>
