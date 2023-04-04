@@ -1,3 +1,4 @@
+import inspect
 import os
 import shutil
 from typing import Optional
@@ -38,6 +39,19 @@ def init():
 
 def deploy_instructions():
     typer.echo("Printing deployment instructions")
+    openai_api_key = os.environ.get("OPENAI_API_KEY", "your OpenAI API key")
+    instructions = inspect.cleandoc(
+        f"""
+        # For fly.io:
+        fly launch # answer no to Postgres, Redis and deploying now 
+        fly secrets set OPENAI_API_KEY={openai_api_key} 
+        fly deploy
+        
+        # For Google Cloud Run:
+        gcloud run deploy --source . --set-env-vars="OPENAI_API_KEY={openai_api_key}"
+        """
+    )
+    print(instructions)
 
 
 def main(action: Optional[str] = typer.Argument(None)):
