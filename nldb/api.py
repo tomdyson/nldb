@@ -5,7 +5,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
-from nldb.core import get_prompt_template, text_to_sql, sql_to_answer
+from nldb.core import NLDB
 
 UVICORN_HOST = os.environ.get("UVICORN_HOST", "0.0.0.0")
 UVICORN_PORT = int(os.environ.get("UVICORN_PORT", 8080))
@@ -16,26 +16,22 @@ app = FastAPI()
 @app.on_event("startup")
 def template_loader():
     global prompt_template
-    prompt_template = get_prompt_template()
+    prompt_template = NLDB().prompt_template
 
 
 @app.get("/api/ask")
 async def ask(q: Union[str, None] = None):
-    (sql_statement, tokens_1, time_1) = text_to_sql(prompt_template, q)
-    (results, answer, tokens_2, sql_time, time_2) = sql_to_answer(
-        sql_statement, prompt_template, q
-    )
-    tokens = tokens_1 + tokens_2
+    nldb = NLDB(prompt_template)
+    sql_statement = nldb.text_to_sql(q)
+    (results, answer) = nldb.sql_to_answer(sql_statement)
     return {
         "response": {
-            "answer": answer,
-            "results": results,
             "sql": sql_statement,
-            "timings": [time_1, sql_time, time_2],  # in seconds
-            "tokens": tokens,
-            "cost": (tokens_1 + tokens_2)
-            / 1000
-            * 0.002,  # gpt-3.5 is $0.002 per 1000 tokens,
+            "results": results,
+            "answer": answer,
+            "timings": nldb.timings,  # in seconds
+            "tokens": nldb.tokens,
+            "cost": nldb.tokens / 1000 * 0.002,  # gpt-3.5 is $0.002 per 1000 tokens,
         }
     }
 
