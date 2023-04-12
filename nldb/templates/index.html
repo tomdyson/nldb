@@ -80,6 +80,7 @@
                             let resp = json['response'];
                             app.answer = resp['answer'];
                             app.results = resp['results'];
+                            app.plain_text_results = resp['plain_text_results'];
                             app.tokens = resp['tokens'];
                             app.sql = resp['sql'];
                             app.cost = parseFloat(resp['cost'].toFixed(4))

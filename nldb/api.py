@@ -23,11 +23,12 @@ def template_loader():
 async def ask(q: Union[str, None] = None):
     nldb = NLDB(prompt_template)
     sql_statement = nldb.text_to_sql(q)
-    (results, answer) = nldb.sql_to_answer(sql_statement)
+    (results, plain_text_results, answer) = nldb.sql_to_answer(sql_statement)
     return {
         "response": {
             "sql": sql_statement,
             "results": results,
+            "plain_text_results": plain_text_results,
             "answer": answer,
             "timings": nldb.timings,  # in seconds
             "tokens": nldb.tokens,

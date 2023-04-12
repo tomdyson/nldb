@@ -60,7 +60,7 @@ class NLDB:
         cursor = connection.cursor()
         cursor.execute(query)
         result = cursor.fetchall()
-        columns = list(cursor.description)
+        columns = [column[0] for column in list(cursor.description)]
         return (columns, result)
 
     @lru_cache
@@ -75,7 +75,7 @@ class NLDB:
         self.timings.append(sql_timer.time)
 
         # format the results
-        formatted_results = tabulate(raw_results, headers=list(columns))
+        plain_text_results = tabulate(raw_results, headers=columns)
         clean_columns = [column[0].replace("_", " ") for column in columns]
         html_results = tabulate(raw_results, headers=clean_columns, tablefmt="html")
 
@@ -86,7 +86,7 @@ class NLDB:
             {
                 "role": "system",
                 "content": "The SQL statement returned the following results:\n\n"
-                + formatted_results,
+                + plain_text_results,
             },
             {
                 "role": "system",
@@ -108,4 +108,4 @@ class NLDB:
 
         answer = resp["choices"][0]["message"]["content"].strip()
         self.tokens += resp["usage"]["total_tokens"]
-        return (html_results, answer)
+        return (html_results, plain_text_results, answer)
