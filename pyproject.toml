@@ -14,7 +14,8 @@ dependencies = [
     "fastapi",
     "uvicorn[standard]",
     "tabulate",
-    "typer"
+    "typer",
+    "duckdb",
 ]
 
 [project.urls]

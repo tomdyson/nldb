@@ -1,7 +1,8 @@
 # Edit this file. You can leave comments like this one.
+# I have a DuckDB database with one table:
 I have a SQLite database with one table:
 
-# Run .schema from your sqlite3 prompt to output the schema
+# Run .schema from your sqlite3 or duckdb prompt to output the schema
 CREATE TABLE [activities] (
    [customer_id] TEXT,
    [stream_start_date] TEXT,

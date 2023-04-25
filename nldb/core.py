@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import duckdb
 from functools import lru_cache
 from timeit import default_timer as timer
 from typing import Tuple
@@ -21,12 +22,26 @@ class ttimer:
         self.time = timer() - self.start_time
 
 
+def is_sqlite3_db(filename):
+    try:
+        con = sqlite3.connect(filename)
+        cursor = con.cursor()
+        cursor.execute("PRAGMA integrity_check")
+        result = cursor.fetchone()
+        cursor.close()
+        con.close()
+        return result == ("ok",)
+    except sqlite3.Error:
+        return False
+
+
 class NLDB:
     def __init__(self, prompt_template: str = None) -> None:
         self.prompt_template = prompt_template or self.get_prompt_template()
         self.tokens = 0
         self.timings = []
         self.question = ""
+        self.db_type = "sqlite3" if is_sqlite3_db(DATABASE) else "duckdb"
 
     def get_prompt_template(self) -> str:
         # returns the prompt template as a string, with comments removed
@@ -56,11 +71,16 @@ class NLDB:
     def execute_sql(self, query: str) -> Tuple[list, list]:
         # executes the SQL statement, returning a list of columns and a list of rows
         # open the database in read-only mode
-        connection = sqlite3.connect(f"file:{DATABASE}?mode=ro", uri=True)
+        if self.db_type == "sqlite3":
+            connection = sqlite3.connect(f"file:{DATABASE}?mode=ro", uri=True)
+        elif self.db_type == "duckdb":
+            connection = duckdb.connect(DATABASE, read_only=True)
         cursor = connection.cursor()
         cursor.execute(query)
         result = cursor.fetchall()
         columns = [column[0] for column in list(cursor.description)]
+        cursor.close()
+        connection.close()
         return (columns, result)
 
     @lru_cache
