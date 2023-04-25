@@ -5,7 +5,7 @@ from typing import Optional
 
 import typer
 from nldb.api import serve
-from nldb.core import DATABASE
+from nldb.core import DATABASE, NLDB
 
 
 def preflight_checks():
@@ -54,6 +54,14 @@ def deploy_instructions():
     print(instructions)
 
 
+def answer(query):
+    nldb = NLDB()
+    sql_statement = nldb.text_to_sql(query)
+    print(f"\n{sql_statement.strip()}")
+    answer = nldb.sql_to_answer(sql_statement)[2]
+    print(f"\n{answer}\n")
+
+
 def main(action: Optional[str] = typer.Argument(None)):
     if not action or action == "serve":
         preflight_checks()
@@ -64,7 +72,7 @@ def main(action: Optional[str] = typer.Argument(None)):
         preflight_checks()
         deploy_instructions()
     else:
-        print(f"Unknown action: {action}")
+        answer(action)
 
 
 # script entrypoint for flit
