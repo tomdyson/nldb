@@ -13,7 +13,7 @@ An OpenAI API key should be available as the `OPENAI_API_KEY` environment variab
 ## Preparing your database
 NLDB can talk to SQLite and DuckDB databases. Call yours `nldb.db` or specify the name with a `DATABASE` environment variable.
 
-You may need to simplify, denormalise and anonymise your database for NLDB to work well. Your columns should have names whose meaning is obvious. While NLDB can join across tables, combining your data into a single table will reduce your prompt size and improve the accuracy of NLDB's query generation.
+You may need to simplify and denormalise your database for NLDB to work well. Your columns should have names whose meaning is obvious. While NLDB can join across tables, combining your data into a single table will reduce your prompt size and improve the accuracy of NLDB's query generation.
 
 ## Initialise NLDB
 
@@ -21,7 +21,7 @@ You may need to simplify, denormalise and anonymise your database for NLDB to wo
 nldb init
 ```
 
-This creates three files: `prompt.txt`, `index.html` and `Dockerfile`. 
+This creates three files: `index.html`, `Dockerfile` and `prompt.txt`. You can ignore the first two for now.
 
 ## Edit your prompt
 
@@ -33,11 +33,15 @@ Edit `prompt.txt`, following the example and instructions in the generated file.
 nldb "What were the most watched videos by Japanese users in 2022?"
 ```
 
-## Start the web server
+## Start the API server
 
 ```bash
 nldb serve
 ```
+
+This starts an API server, on port 8080, with a single endpoint at `/api/ask`. This expects a GET request with a `q` parameter for the natural language query. It returns a JSON object containing the SQL statement, the result of executing the statement, a plain English answer and some timing and cost information.
+
+There is a simple web interface to the API at `/`. If you don't want this, just delete `index.html`.
 
 ## Adjust
 
