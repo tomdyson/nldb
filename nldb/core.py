@@ -1,11 +1,14 @@
+import hashlib
 import os
+import re
 import sqlite3
-import duckdb
 from functools import lru_cache
+from inspect import cleandoc
 from timeit import default_timer as timer
 from typing import Tuple
 
-from openai import ChatCompletion
+import duckdb
+import openai
 from tabulate import tabulate
 
 DATABASE = os.environ.get("DATABASE", "nldb.db")
@@ -35,6 +38,20 @@ def is_sqlite3_db(filename):
         return False
 
 
+def markdown_to_python(markdown_str):
+    # find code blocks in markdown
+    code_blocks = re.findall(r"```(.*?)```", markdown_str, re.DOTALL)
+
+    # loop through code blocks and extract code and language
+    for block in code_blocks:
+        lines = block.strip().split("\n")
+        language = lines[0].strip()
+        # if language is Python, return code
+        if language == "python":
+            return "\n".join(lines[1:])
+    return None
+
+
 class NLDB:
     def __init__(self, prompt_template: str = None) -> None:
         self.prompt_template = prompt_template or self.get_prompt_template()
@@ -58,7 +75,7 @@ class NLDB:
             {"role": "user", "content": self.prompt_template % question},
         ]
         with ttimer() as gpt_timer:
-            resp = ChatCompletion.create(
+            resp = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=prompt_messages,
                 temperature=0,
@@ -119,7 +136,7 @@ class NLDB:
         ]
 
         with ttimer() as gpt_timer:
-            resp = ChatCompletion.create(
+            resp = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=prompt_messages,
                 temperature=0,
@@ -129,3 +146,46 @@ class NLDB:
         answer = resp["choices"][0]["message"]["content"].strip()
         self.tokens += resp["usage"]["total_tokens"]
         return (html_results, plain_text_results, answer)
+
+    @lru_cache
+    def results_to_chart(self, question: str, results: str) -> Tuple[str, str]:
+        # uses GPT-3.5 to convert a question and answer into a chart
+        chart_prompt = f"""Given this question:
+
+            {question}
+
+            and these results:
+
+            {results}
+
+            write some Python code with matplotlib.pyplot to create a chart 
+            which illustrates this data.
+
+            Don't use plt.show(), use plt.save('image.png'). After saving the 
+            chart, clear the figure by running 
+            plt.clf()
+            plt.cla()
+            plt.close()
+            """
+        prompt_messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": cleandoc(chart_prompt)},
+            {
+                "role": "system",
+                "content": "Only return the Python code. DON'T explain your work.",
+            },
+        ]
+        with ttimer() as gpt_timer:
+            resp = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=prompt_messages,
+                temperature=0,
+            )
+        self.timings.append(gpt_timer.time)
+
+        chart_code = resp["choices"][0]["message"]["content"].strip()
+        self.tokens += resp["usage"]["total_tokens"]
+        filehash = hashlib.sha1(chart_code.encode()).hexdigest()[:8]
+        filename = f"charts/chart-{filehash}.png"
+        chart_code = chart_code.replace("image.png", filename)
+        return (filename, markdown_to_python(chart_code))

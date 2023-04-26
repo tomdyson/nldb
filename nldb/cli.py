@@ -35,6 +35,11 @@ def init():
         else:
             shutil.copyfile(os.path.join(package_dir, "templates", file), dest)
             typer.echo(f"Created {file} at {dest}")
+    # make a 'charts' directory if it doesn't exist
+    charts_dir = os.path.join(os.getcwd(), "charts")
+    if not os.path.exists(charts_dir):
+        os.mkdir(charts_dir)
+        typer.echo(f"Created directory at {charts_dir}")
 
 
 def deploy_instructions():
