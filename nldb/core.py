@@ -1,4 +1,5 @@
 import hashlib
+import json
 import os
 import re
 import sqlite3
@@ -52,6 +53,30 @@ def markdown_to_python(markdown_str):
     return None
 
 
+def cache_chat_completion(prompt_messages):
+    # hash the prompt messages
+    m = hashlib.sha256()
+    m.update(str(prompt_messages).encode("utf-8"))
+    prompt_hash = m.hexdigest()
+    # check if the hash is in the cache
+    cache_dir = os.path.join(os.getcwd(), "cache")
+    cache_file = os.path.join(cache_dir, f"{prompt_hash}.json")
+    if os.path.exists(cache_file):
+        return json.loads(open(cache_file).read())
+    # otherwise, run the completion
+    resp = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=prompt_messages,
+        temperature=0,
+    )
+    # save the response to the cache
+    if not os.path.exists(cache_dir):
+        os.mkdir(cache_dir)
+    with open(cache_file, "w") as f:
+        f.write(str(resp))
+    return resp
+
+
 class NLDB:
     def __init__(self, prompt_template: str = None) -> None:
         self.prompt_template = prompt_template or self.get_prompt_template()
@@ -75,11 +100,8 @@ class NLDB:
             {"role": "user", "content": self.prompt_template % question},
         ]
         with ttimer() as gpt_timer:
-            resp = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=prompt_messages,
-                temperature=0,
-            )
+            resp = cache_chat_completion(prompt_messages)
+            print
         self.timings.append(gpt_timer.time)
         self.tokens += resp["usage"]["total_tokens"]
 
@@ -136,11 +158,7 @@ class NLDB:
         ]
 
         with ttimer() as gpt_timer:
-            resp = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=prompt_messages,
-                temperature=0,
-            )
+            resp = cache_chat_completion(prompt_messages)
         self.timings.append(gpt_timer.time)
 
         answer = resp["choices"][0]["message"]["content"].strip()
@@ -178,11 +196,7 @@ class NLDB:
             },
         ]
         with ttimer() as gpt_timer:
-            resp = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=prompt_messages,
-                temperature=0,
-            )
+            resp = cache_chat_completion(prompt_messages)
         self.timings.append(gpt_timer.time)
 
         chart_code = resp["choices"][0]["message"]["content"].strip()
