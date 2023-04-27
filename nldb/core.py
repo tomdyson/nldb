@@ -54,6 +54,7 @@ def markdown_to_python(markdown_str):
 
 
 def cache_chat_completion(prompt_messages):
+    """File-based cache for GPT-3.5 chat completions"""
     # hash the prompt messages
     m = hashlib.sha256()
     m.update(str(prompt_messages).encode("utf-8"))
