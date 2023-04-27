@@ -161,6 +161,8 @@ class NLDB:
             write some Python code with matplotlib.pyplot to create a chart 
             which illustrates this data.
 
+            Don't use Pandas or pd.DataFrame.
+
             Don't use plt.show(), use plt.save('image.png'). After saving the 
             chart, clear the figure by running 
             plt.clf()
