@@ -182,6 +182,8 @@ class NLDB:
 
             Don't use Pandas or pd.DataFrame.
 
+            Use plt.tight_layout() to make sure the chart is legible.
+
             Don't use plt.show(), use plt.save('image.png'). After saving the 
             chart, clear the figure by running 
             plt.clf()

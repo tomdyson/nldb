@@ -16,7 +16,7 @@ dependencies = [
     "tabulate",
     "typer",
     "duckdb",
-    "matplotlib
+    "matplotlib",
 ]
 
 [project.urls]
