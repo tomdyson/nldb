@@ -1,4 +1,3 @@
-import os
 from typing import Union
 
 import uvicorn
@@ -7,9 +6,8 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from nldb.core import NLDB
+from nldb.config import UVICORN_HOST, UVICORN_PORT
 
-UVICORN_HOST = os.environ.get("UVICORN_HOST", "0.0.0.0")
-UVICORN_PORT = int(os.environ.get("UVICORN_PORT", 8080))
 
 app = FastAPI()
 
