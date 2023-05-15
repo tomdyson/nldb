@@ -8,7 +8,7 @@ Natural Language Databasing. Talk to your data in English, via CLI, API or a sim
 pip install nldb
 ```
 
-An OpenAI API key should be available as the `OPENAI_API_KEY` environment variable, e.g. using `export OPENAI_API_KEY=sk-etc`.
+An OpenAI API key should be available as the `OPENAI_API_KEY` environment variable, e.g. using `export OPENAI_API_KEY=sk-etc` or adding it to your project `.env` file.
 
 ## Preparing your database
 NLDB can talk to SQLite and DuckDB databases. Call yours `nldb.db` or specify the name with a `DATABASE` environment variable.
