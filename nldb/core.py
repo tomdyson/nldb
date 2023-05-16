@@ -12,7 +12,7 @@ import duckdb
 import openai
 from tabulate import tabulate
 
-DATABASE = os.environ.get("DATABASE", "nldb.db")
+from nldb.config import DATABASE
 
 
 class ttimer:

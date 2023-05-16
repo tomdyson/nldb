@@ -17,6 +17,7 @@ dependencies = [
     "typer",
     "duckdb",
     "matplotlib",
+    "python-dotenv"
 ]
 
 [project.urls]
