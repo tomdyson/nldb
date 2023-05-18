@@ -11,7 +11,7 @@ import duckdb
 import openai
 from tabulate import tabulate
 
-from nldb.config import DATABASE
+from nldb.config import DATABASE, OPENAI_API_KEY
 
 
 class ttimer:
@@ -68,7 +68,7 @@ async def cache_chat_completion(prompt_messages):
         model="gpt-3.5-turbo",
         messages=prompt_messages,
         temperature=0,
-        api_key=OPENAPI_KEY,
+        api_key=OPENAI_API_KEY,
     )
     # save the response to the cache
     if not os.path.exists(cache_dir):
