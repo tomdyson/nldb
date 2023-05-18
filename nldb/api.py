@@ -23,8 +23,8 @@ def load_prompt_template():
 async def ask(q: Union[str, None] = None):
     """Process a text query and return the SQL statement, results, and explanation."""
     nldb = NLDB(prompt_template)
-    sql_statement = nldb.text_to_sql(q)
-    results, plain_text_results, answer = nldb.sql_to_answer(sql_statement)
+    sql_statement = await nldb.text_to_sql(q)
+    results, plain_text_results, answer = await nldb.sql_to_answer(sql_statement)
     return {
         "response": {
             "sql": sql_statement,
@@ -68,4 +68,4 @@ async def serve_index():
 
 
 def serve():
-    uvicorn.run("nldb.api:app", host=UVICORN_HOST, port=UVICORN_PORT, workers=2)
+    uvicorn.run("nldb.api:app", host=UVICORN_HOST, port=UVICORN_PORT, workers=1)

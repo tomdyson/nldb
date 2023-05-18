@@ -3,7 +3,6 @@ import json
 import os
 import re
 import sqlite3
-from functools import lru_cache
 from inspect import cleandoc
 from timeit import default_timer as timer
 from typing import Tuple
@@ -12,7 +11,7 @@ import duckdb
 import openai
 from tabulate import tabulate
 
-from nldb.config import DATABASE
+from nldb.config import DATABASE, OPENAI_API_KEY
 
 
 class ttimer:
@@ -53,7 +52,7 @@ def markdown_to_python(markdown_str):
     return None
 
 
-def cache_chat_completion(prompt_messages):
+async def cache_chat_completion(prompt_messages):
     """File-based cache for GPT-3.5 chat completions"""
     # hash the prompt messages
     m = hashlib.sha256()
@@ -65,10 +64,11 @@ def cache_chat_completion(prompt_messages):
     if os.path.exists(cache_file):
         return json.loads(open(cache_file).read())
     # otherwise, run the completion
-    resp = openai.ChatCompletion.create(
+    resp = await openai.ChatCompletion.acreate(
         model="gpt-3.5-turbo",
         messages=prompt_messages,
         temperature=0,
+        api_key=OPENAI_API_KEY,
     )
     # save the response to the cache
     if not os.path.exists(cache_dir):
@@ -92,8 +92,7 @@ class NLDB:
         uncommented_lines = [line for line in lines if not line.strip().startswith("#")]
         return "\n".join(uncommented_lines).strip()
 
-    @lru_cache
-    def text_to_sql(self, question: str) -> str:
+    async def text_to_sql(self, question: str) -> str:
         # uses GPT-3.5 to convert a question into a SQL statement
         self.question = question
         prompt_messages = [
@@ -101,8 +100,7 @@ class NLDB:
             {"role": "user", "content": self.prompt_template % question},
         ]
         with ttimer() as gpt_timer:
-            resp = cache_chat_completion(prompt_messages)
-            print
+            resp = await cache_chat_completion(prompt_messages)
         self.timings.append(gpt_timer.time)
         self.tokens += resp["usage"]["total_tokens"]
 
@@ -123,8 +121,7 @@ class NLDB:
         connection.close()
         return (columns, result)
 
-    @lru_cache
-    def sql_to_answer(self, sql: str) -> Tuple[str, str]:
+    async def sql_to_answer(self, sql: str) -> Tuple[str, str]:
         # executes the SQL statement and asks GPT to explain them
         prompt_template = self.prompt_template
         question = self.question
@@ -159,15 +156,14 @@ class NLDB:
         ]
 
         with ttimer() as gpt_timer:
-            resp = cache_chat_completion(prompt_messages)
+            resp = await cache_chat_completion(prompt_messages)
         self.timings.append(gpt_timer.time)
 
         answer = resp["choices"][0]["message"]["content"].strip()
         self.tokens += resp["usage"]["total_tokens"]
         return (html_results, plain_text_results, answer)
 
-    @lru_cache
-    def results_to_chart(self, question: str, results: str) -> Tuple[str, str]:
+    async def results_to_chart(self, question: str, results: str) -> Tuple[str, str]:
         # uses GPT-3.5 to convert a question and answer into a chart
         chart_prompt = f"""Given this question:
 
@@ -199,7 +195,7 @@ class NLDB:
             },
         ]
         with ttimer() as gpt_timer:
-            resp = cache_chat_completion(prompt_messages)
+            resp = await cache_chat_completion(prompt_messages)
         self.timings.append(gpt_timer.time)
 
         chart_code = resp["choices"][0]["message"]["content"].strip()
