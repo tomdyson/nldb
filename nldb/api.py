@@ -6,8 +6,9 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from nldb.core import NLDB
-from nldb.config import UVICORN_HOST, UVICORN_PORT
+from nldb.config import get_settings
 
+settings = get_settings()
 
 app = FastAPI()
 
@@ -68,4 +69,4 @@ async def serve_index():
 
 
 def serve():
-    uvicorn.run("nldb.api:app", host=UVICORN_HOST, port=UVICORN_PORT, workers=1)
+    uvicorn.run("nldb.api:app", host=settings.uvicorn_host, port=settings.uvicorn_port, workers=1)
