@@ -1,6 +1,4 @@
 import hashlib
-import json
-import os
 import re
 import sqlite3
 from inspect import cleandoc
@@ -10,6 +8,7 @@ import duckdb
 import openai
 from tabulate import tabulate
 
+from nldb.cache import cache
 from nldb.config import get_settings
 
 settings = get_settings()
@@ -55,28 +54,16 @@ def markdown_to_python(markdown_str):
 
 async def cache_chat_completion(prompt_messages):
     """File-based cache for GPT-3.5 chat completions"""
-    # hash the prompt messages
-    m = hashlib.sha256()
-    m.update(str(prompt_messages).encode("utf-8"))
-    prompt_hash = m.hexdigest()
-    # check if the hash is in the cache
-    cache_dir = os.path.join(os.getcwd(), "cache")
-    cache_file = os.path.join(cache_dir, f"{prompt_hash}.json")
-    if os.path.exists(cache_file):
-        return json.loads(open(cache_file).read())
-    # otherwise, run the completion
-    resp = await openai.ChatCompletion.acreate(
-        model="gpt-3.5-turbo",
-        messages=prompt_messages,
-        temperature=0,
-        api_key=settings.openai_api_key,
-    )
-    # save the response to the cache
-    if not os.path.exists(cache_dir):
-        os.mkdir(cache_dir)
-    with open(cache_file, "w") as f:
-        f.write(str(resp))
-    return resp
+    cache_key = prompt_messages
+    if (value := cache.get(cache_key)) is None:
+        value = await openai.ChatCompletion.acreate(
+            model="gpt-3.5-turbo",
+            messages=prompt_messages,
+            temperature=0,
+            api_key=settings.openai_api_key,
+        )
+        cache.set(cache_key, value)
+    return value
 
 
 class NLDB:
