@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
+requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -19,9 +19,31 @@ dependencies = [
     "matplotlib",
     "python-dotenv"
 ]
+requires-python = ">=3.11"
 
 [project.urls]
 Home = "https://github.com/tomdyson/nldb"
 
 [project.scripts]
 nldb = "nldb.cli:cli_wrapper"
+
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+target-version = "py311"
+select = [
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "E",  # pycodestyle errors
+    "F",  # pyflakes
+    "I",  # isort
+    "S",  # flake8-bandit
+    "W",  # pycodestyle warnings
+    "UP", # pyupgrade
+]
+
+[tool.ruff.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.Query", "fastapi.params.Query", "typer.Argument", "typer.Optional"]
