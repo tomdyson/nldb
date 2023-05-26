@@ -11,7 +11,10 @@ import duckdb
 import openai
 from tabulate import tabulate
 
-from nldb.config import DATABASE, OPENAI_API_KEY
+from nldb.config import get_settings
+
+
+settings = get_settings()
 
 
 class ttimer:
@@ -68,7 +71,7 @@ async def cache_chat_completion(prompt_messages):
         model="gpt-3.5-turbo",
         messages=prompt_messages,
         temperature=0,
-        api_key=OPENAI_API_KEY,
+        api_key=settings.openai_api_key,
     )
     # save the response to the cache
     if not os.path.exists(cache_dir):
@@ -84,7 +87,7 @@ class NLDB:
         self.tokens = 0
         self.timings = []
         self.question = ""
-        self.db_type = "sqlite3" if is_sqlite3_db(DATABASE) else "duckdb"
+        self.db_type = "sqlite3" if is_sqlite3_db(settings.database) else "duckdb"
 
     def get_prompt_template(self) -> str:
         # returns the prompt template as a string, with comments removed
@@ -110,9 +113,9 @@ class NLDB:
         # executes the SQL statement, returning a list of columns and a list of rows
         # open the database in read-only mode
         if self.db_type == "sqlite3":
-            connection = sqlite3.connect(f"file:{DATABASE}?mode=ro", uri=True)
+            connection = sqlite3.connect(f"file:{settings.database}?mode=ro", uri=True)
         elif self.db_type == "duckdb":
-            connection = duckdb.connect(DATABASE, read_only=True)
+            connection = duckdb.connect(settings.database, read_only=True)
         cursor = connection.cursor()
         cursor.execute(query)
         result = cursor.fetchall()

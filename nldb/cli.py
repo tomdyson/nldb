@@ -6,7 +6,9 @@ from typing import Optional
 import typer
 from nldb.api import serve
 from nldb.core import NLDB
-from nldb.config import DATABASE, OPENAI_API_KEY
+from nldb.config import get_settings
+
+settings = get_settings()
 
 
 def preflight_checks():
@@ -16,10 +18,10 @@ def preflight_checks():
         typer.echo("prompt.txt file not found")
         typer.echo("Run `nldb init` to create a new prompt.txt file")
         failures += 1
-    if not os.path.exists(DATABASE):
-        typer.echo(f"Database file not found: {DATABASE}")
+    if not os.path.exists(settings.database):
+        typer.echo(f"Database file not found: {settings.database}")
         failures += 1
-    if not OPENAI_API_KEY:
+    if not settings.openai_api_key:
         typer.echo("OPENAI_API_KEY environment variable not set")
         failures += 1
     if failures > 0:
@@ -45,7 +47,7 @@ def init():
 
 def deploy_instructions():
     typer.echo("Printing deployment instructions")
-    openai_api_key = OPENAI_API_KEY or "your OpenAI API key"
+    openai_api_key = settings.OPENAI_API_KEY or "your OpenAI API key"
     instructions = inspect.cleandoc(
         f"""
         # For fly.io:
