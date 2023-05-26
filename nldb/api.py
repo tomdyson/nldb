@@ -1,12 +1,10 @@
-from typing import Union
-
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from nldb.core import NLDB
 from nldb.config import get_settings
+from nldb.core import NLDB
 
 settings = get_settings()
 
@@ -21,7 +19,7 @@ def load_prompt_template():
 
 
 @app.get("/api/ask")
-async def ask(q: Union[str, None] = None):
+async def ask(q: str):
     """Process a text query and return the SQL statement, results, and explanation."""
     nldb = NLDB(prompt_template)
     sql_statement = await nldb.text_to_sql(q)
@@ -52,7 +50,8 @@ async def chart(request_data: ChartRequest):
     filename, code = nldb.results_to_chart(request_data.question, request_data.results)
     print(filename)
     print(code)
-    exec(code)
+    # To-Do: refactor this to avoid using exec
+    exec(code)  # noqa: S102
     return {"response": {"chart": filename}}
 
 
@@ -69,4 +68,9 @@ async def serve_index():
 
 
 def serve():
-    uvicorn.run("nldb.api:app", host=settings.uvicorn_host, port=settings.uvicorn_port, workers=1)
+    uvicorn.run(
+        "nldb.api:app",
+        host=settings.uvicorn_host,
+        port=settings.uvicorn_port,
+        workers=1,
+    )

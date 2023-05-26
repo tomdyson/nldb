@@ -5,14 +5,12 @@ import re
 import sqlite3
 from inspect import cleandoc
 from timeit import default_timer as timer
-from typing import Tuple
 
 import duckdb
 import openai
 from tabulate import tabulate
 
 from nldb.config import get_settings
-
 
 settings = get_settings()
 
@@ -109,7 +107,7 @@ class NLDB:
 
         return resp["choices"][0]["message"]["content"].strip()
 
-    def execute_sql(self, query: str) -> Tuple[list, list]:
+    def execute_sql(self, query: str) -> tuple[list, list]:
         # executes the SQL statement, returning a list of columns and a list of rows
         # open the database in read-only mode
         if self.db_type == "sqlite3":
@@ -124,7 +122,7 @@ class NLDB:
         connection.close()
         return (columns, result)
 
-    async def sql_to_answer(self, sql: str) -> Tuple[str, str]:
+    async def sql_to_answer(self, sql: str) -> tuple[str, str]:
         # executes the SQL statement and asks GPT to explain them
         prompt_template = self.prompt_template
         question = self.question
@@ -166,7 +164,7 @@ class NLDB:
         self.tokens += resp["usage"]["total_tokens"]
         return (html_results, plain_text_results, answer)
 
-    async def results_to_chart(self, question: str, results: str) -> Tuple[str, str]:
+    async def results_to_chart(self, question: str, results: str) -> tuple[str, str]:
         # uses GPT-3.5 to convert a question and answer into a chart
         chart_prompt = f"""Given this question:
 
@@ -176,15 +174,15 @@ class NLDB:
 
             {results}
 
-            write some Python code with matplotlib.pyplot to create a chart 
+            write some Python code with matplotlib.pyplot to create a chart
             which illustrates this data.
 
             Don't use Pandas or pd.DataFrame.
 
             Use plt.tight_layout() to make sure the chart is legible.
 
-            Don't use plt.show(), use plt.save('image.png'). After saving the 
-            chart, clear the figure by running 
+            Don't use plt.show(), use plt.save('image.png'). After saving the
+            chart, clear the figure by running
             plt.clf()
             plt.cla()
             plt.close()
@@ -203,7 +201,7 @@ class NLDB:
 
         chart_code = resp["choices"][0]["message"]["content"].strip()
         self.tokens += resp["usage"]["total_tokens"]
-        filehash = hashlib.sha1(chart_code.encode()).hexdigest()[:8]
+        filehash = hashlib.sha1(chart_code.encode()).hexdigest()[:8]  # noqa: S324
         filename = f"charts/chart-{filehash}.png"
         chart_code = chart_code.replace("image.png", filename)
         return (filename, markdown_to_python(chart_code))
