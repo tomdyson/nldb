@@ -6,7 +6,7 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     database: str = "nldb.db"
     openai_api_key: str = None
-    uvicorn_host: str = "0.0.0.0"
+    uvicorn_host: str = "0.0.0.0"  # noqa: S104
     uvicorn_port: int = 8080
 
     class Config:

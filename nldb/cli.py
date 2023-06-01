@@ -1,12 +1,12 @@
 import inspect
 import os
 import shutil
-from typing import Optional
 
 import typer
+
 from nldb.api import serve
-from nldb.core import NLDB
 from nldb.config import get_settings
+from nldb.core import NLDB
 
 settings = get_settings()
 
@@ -51,10 +51,10 @@ def deploy_instructions():
     instructions = inspect.cleandoc(
         f"""
         # For fly.io:
-        fly launch # answer no to Postgres, Redis and deploying now 
-        fly secrets set OPENAI_API_KEY={openai_api_key} 
+        fly launch # answer no to Postgres, Redis and deploying now
+        fly secrets set OPENAI_API_KEY={openai_api_key}
         fly deploy
-        
+
         # For Google Cloud Run:
         gcloud run deploy --source . --set-env-vars="OPENAI_API_KEY={openai_api_key}"
         """
@@ -70,7 +70,7 @@ def answer(query):
     print(f"\n{answer}\n")
 
 
-def main(action: Optional[str] = typer.Argument(None)):
+def main(action: str | None = typer.Argument(None)):
     if not action or action == "serve":
         preflight_checks()
         serve()
