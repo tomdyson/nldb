@@ -2,15 +2,12 @@ import hashlib
 import json
 import time
 from pathlib import Path
-from typing import Optional
 
 from .base import CacheBackend
 
 
 class FileCache(CacheBackend):
-    def __init__(
-        self, cache_dir: Optional[str] = None, ttl: Optional[int] = None
-    ) -> None:
+    def __init__(self, cache_dir: str | None = None, ttl: int | None = None) -> None:
         self.cache_dir = Path(cache_dir or "cache")
         self.ttl = ttl
 
@@ -39,7 +36,7 @@ class FileCache(CacheBackend):
         current_time = time.time()
         return current_time - modified_time > self.ttl
 
-    def get(self, key: str) -> Optional[bytes]:
+    def get(self, key: str) -> bytes | None:
         """
         Returns the cached value for the given key, if it exists and is not expired.
         """
@@ -53,11 +50,11 @@ class FileCache(CacheBackend):
                 return None
         return None
 
-    def set(self, key: str, value: bytes, ttl: Optional[int] = None) -> None:
+    def set(self, key: str, value: bytes, ttl: int | None = None) -> None:
         cache_path = self._get_cache_path(key)
         cache_path.write_text(str(value))
 
-    def clear(self, key: Optional[str] = None) -> None:
+    def clear(self, key: str | None = None) -> None:
         """
         Clears the cache.
         If key is specified, only the cached file for that key is cleared.
